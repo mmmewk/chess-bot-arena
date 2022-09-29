@@ -1,13 +1,15 @@
+import { Chess } from "chess.js";
 import { countChar, winner } from "./utils";
 
-export const evaluateCheckmate = (fen: string) => {
-  const gameWinner = winner(fen);
+export const evaluateCheckmate = (game: Chess) => {
+  const gameWinner = winner(game);
   if (gameWinner === 'd') return 0;
   if (gameWinner === 'w') return -999;
   if (gameWinner === 'b') return 999;
 }
 
-export const evaluateMaterial = (fen: string) => {
+export const evaluateMaterial = (game: Chess) => {
+  const fen = game.fen();
   let value = 0;
   value += countChar(fen, 'p');
   value += 3 * countChar(fen, 'b');

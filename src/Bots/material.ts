@@ -1,13 +1,15 @@
+import { Chess } from "chess.js";
 import { evaluateCheckmate, evaluateMaterial } from "../helpers/evaluators";
 import createMinMaxBot from "./minMax";
 
 const materialBot = createMinMaxBot({
   name: 'Material Bot',
   evaluateFen: (fen: string) => {
-    const checkmateValue = evaluateCheckmate(fen);
+    const game = new Chess(fen);
+    const checkmateValue = evaluateCheckmate(game);
     if (checkmateValue) return checkmateValue;
   
-    return evaluateMaterial(fen);
+    return evaluateMaterial(game);
   },
   depth: 2,
 });
