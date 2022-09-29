@@ -1,18 +1,19 @@
+import { Chess } from 'chess.js';
 import { minMax } from '../helpers/minMax';
 
 const createMinMaxBot = ({
   depth,
-  evaluateFen,
+  evaluatePosition,
   name,
 } : {
   depth: number,
-  evaluateFen: (fen: string) => number,
+  evaluatePosition: (game: Chess) => number,
   name: string,
 }) => {
   return {
     name,
-    move: (fen: string) => {
-      const { move } = minMax({ depth, fen, evaluateFen });
+    move: (game: Chess) => {
+      const { move } = minMax({ depth, game, evaluatePosition });
       return move;
     }
   }

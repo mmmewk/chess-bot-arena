@@ -1,9 +1,9 @@
-import randomBot from './Bots/random';
+import materialBot from './Bots/material';
 import ChessGame from './ChessGame';
 
 function App() {
   return (
-    <ChessGame black={randomBot} />
+    <ChessGame black={materialBot} />
   );
 }
 

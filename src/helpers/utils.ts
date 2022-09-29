@@ -26,3 +26,9 @@ export const logGameState = (game: Chess) => {
     if (gameWinner === 'b') console.log('Black Wins!');
   }
 }
+
+export const copyGame = (game: Chess) => {
+  const newGame = new Chess();
+  newGame.loadPgn(game.pgn());
+  return newGame;
+}

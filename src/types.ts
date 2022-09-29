@@ -1,4 +1,4 @@
-import { Move } from "chess.js";
+import { Chess, Move } from "chess.js";
 
 export type ShortMove = Partial<Move> & {
   from: string,
@@ -7,5 +7,5 @@ export type ShortMove = Partial<Move> & {
 
 export type Bot = {
   name: string,
-  move: (fen: string) => string | ShortMove | undefined;
+  move: (game: Chess) => string | ShortMove | undefined;
 };

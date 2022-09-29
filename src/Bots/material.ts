@@ -4,14 +4,13 @@ import createMinMaxBot from "./minMax";
 
 const materialBot = createMinMaxBot({
   name: 'Material Bot',
-  evaluateFen: (fen: string) => {
-    const game = new Chess(fen);
+  evaluatePosition: (game: Chess) => {
     const checkmateValue = evaluateCheckmate(game);
     if (checkmateValue) return checkmateValue;
   
     return evaluateMaterial(game);
   },
-  depth: 2,
+  depth: 3,
 });
 
 export default materialBot;

@@ -3,8 +3,8 @@ import { Move } from "chess.js";
 
 export type MinMaxParameters = {
   depth: number;
-  fen: string;
-  evaluateFen: (fen: string) => number;
+  game: Chess;
+  evaluatePosition: (game: Chess) => number;
   max?: boolean;
 };
 
@@ -15,13 +15,12 @@ export type MinMaxReturn = {
 
 function minMax({
   depth,
-  fen,
-  evaluateFen,
+  game,
+  evaluatePosition,
   max = true
 }: MinMaxParameters): MinMaxReturn {
-  const game = new Chess(fen);
   if (depth === 0 || game.isGameOver()) {
-    return { value: evaluateFen(fen) };
+    return { value: evaluatePosition(game) };
   }
 
   const initBestValue = max
@@ -32,12 +31,11 @@ function minMax({
 
   const moves = game.moves();
   moves.forEach((move) => {
-    const game = new Chess(fen);
     game.move(move);
     const { value } = minMax({
       depth: depth - 1,
-      fen: game.fen(),
-      evaluateFen: evaluateFen,
+      game: game,
+      evaluatePosition,
       max: !max,
     });
 
@@ -48,6 +46,7 @@ function minMax({
       best.value = value;
       best.move = move;
     }
+    game.undo();
   });
 
   return best;

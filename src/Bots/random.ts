@@ -4,8 +4,7 @@ import { ShortMove } from '../types';
 
 const randomBot = {
   name: 'Randotron 3000',
-  move: (fen: string) => {
-    const game = new Chess(fen);
+  move: (game: Chess) => {
     const possibleMoves = game.moves() as (string | ShortMove)[];
 
     const move = sample(possibleMoves);

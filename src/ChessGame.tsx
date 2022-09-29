@@ -1,9 +1,9 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Chess, Square } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import { ShortMove, Bot } from './types';
 import { useDebouncedCallback } from 'use-debounce';
-import { logGameState } from './helpers/utils';
+import { copyGame, logGameState } from './helpers/utils';
 
 interface Props {
   white?: Bot,
@@ -17,53 +17,55 @@ const ChessGame : React.FC<Props> = ({ white, black }) => {
   const makeMove = (move?: string | ShortMove) => {
     if (!move) {
       console.error('No Move Supplied');
-      return null;
+      return false;
     }
+
     const result = game.move(move);
-    onMove();
-    return result;
+
+    // Illegal Move
+    if (result === null) {
+      console.error('Illegal Move', move);
+      return false;
+    }
+
+    setFen(game.fen());
+    logGameState(game);
+
+    return true;
   };
+
+  const onDrop = (sourceSquare: Square, targetSquare: Square) => (
+    makeMove({
+      from: sourceSquare,
+      to: targetSquare,
+    })
+  );
+
+  const getBot = useCallback(() => {
+    const turn = game.turn();
+
+    if (turn === 'w') return white;
+    if (turn === 'b') return black;
+  }, [game, white, black]);
 
   const makeBotMove = useDebouncedCallback(() => {
     if (game.isGameOver()) return;
 
-    const turn = game.turn();
-    let bot : Bot | null = null;
-
-    if (turn === 'w' && white) bot = white;
-    if (turn === 'b' && black) bot = black;
-
+    const bot = getBot();
     if (!bot) return;
 
-    console.log(`${bot.name} is thinking!`)
+    console.log(`${bot.name} is thinking!`);
     console.time(`${bot.name} moved`);
-    const move = bot.move(game.fen());
+
+    const move = bot.move(copyGame(game));
+
     console.timeEnd(`${bot.name} moved`);
     console.log(move);
 
     makeMove(move);
   }, 200);
 
-  const onMove = useCallback(() => {
-    setFen(game.fen());
-    logGameState(game);
-    makeBotMove();
-  }, [game, makeBotMove]);
-
-  function onDrop(sourceSquare: Square, targetSquare: Square) {
-    const move = makeMove({
-      from: sourceSquare,
-      to: targetSquare,
-    });
-
-    // illegal move
-    if (move === null) {
-      console.error('Illegal Move', sourceSquare, targetSquare);
-      return false;
-    }
-    
-    return true;
-  }
+  useEffect(makeBotMove, [fen, makeBotMove]);
 
   return <Chessboard position={fen} onPieceDrop={onDrop} />;
 };
