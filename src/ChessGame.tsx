@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Chess, Square } from 'chess.js';
+import { Chess, PieceSymbol, Square } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import { ShortMove, Bot } from './types';
 import { useDebouncedCallback } from 'use-debounce';
@@ -34,12 +34,28 @@ const ChessGame : React.FC<Props> = ({ white, black }) => {
     return true;
   };
 
-  const onDrop = (sourceSquare: Square, targetSquare: Square) => (
-    makeMove({
+  const onDrop = (sourceSquare: Square, targetSquare: Square) => {
+    const fromPiece = game.get(sourceSquare);
+
+    let promotion : PieceSymbol | undefined = undefined;
+
+    if (fromPiece.type === 'p' && targetSquare.match(/[a-g][1|8]/)) {
+      while (!promotion) {
+        const input = window.prompt('Which peice do you want? (queen, rook, bishop or knight)');
+        if (!input) continue;
+
+        const firstLetter = input[0]?.toLowerCase();
+        if (['k', 'n'].includes(firstLetter)) promotion = 'n';
+        if (['q', 'r', 'b'].includes(firstLetter)) promotion = firstLetter as 'q' | 'r' | 'b';
+      }
+    }
+
+    return makeMove({
       from: sourceSquare,
       to: targetSquare,
+      promotion,
     })
-  );
+  };
 
   const getBot = useCallback(() => {
     const turn = game.turn();
