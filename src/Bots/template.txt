@@ -1,0 +1,35 @@
+/**
+ * Welcome to Chess Bot Arena!
+ * 
+ * Write code below to control how your prototype bot
+ * will perform a move from any position in a chess game.
+ * On the right you can pick which bots are playing for each side of the board.
+ * While having "Player" selected you can hit "Make Move" to have your bot play a single move.
+ * Choose "Prototype Bot" to have your bot automatically make moves when it is it's turn
+ */
+
+
+// @see: Documentation for game object https://github.com/jhlywa/chess.js
+// @see: Documentation for lodash https://lodash.com/docs/4.17.15
+(game, lodash) => {
+  // Get all possible moves
+  const moves = game.moves();
+
+  // Find all moves where we capture a peice
+  // @see: Algebraic Notation https://www.nytimes.com/2022/06/13/crosswords/chess/chess-algebraic-notation.html
+  const capturingMoves = moves.filter((move) => move.match(/x/));
+
+  // Choose a random move, preferring one where we capture a peice
+  let bestMove = lodash.sample(capturingMoves) || lodash.sample(moves);
+
+  // Perform each move and see if it will deliver checkmate
+  moves.forEach((move) => {
+    game.move(move);
+
+    if (game.isCheckmate()) bestMove = move;
+
+    game.undo(move);
+  });
+
+  return bestMove;
+}

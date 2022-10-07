@@ -5,29 +5,31 @@ export type MinMaxParameters = {
   depth: number;
   game: Chess;
   evaluatePosition: (game: Chess) => number;
-  max?: boolean;
+  pruneBranch?: (game: Chess) => boolean;
 };
 
 export type MinMaxReturn = {
   value: number;
-  move?: string | Move;
+  moves: (string | Move)[];
 };
 
 function minMax({
   depth,
   game,
   evaluatePosition,
-  max = true
+  pruneBranch = () => false,
 }: MinMaxParameters): MinMaxReturn {
-  if (depth === 0 || game.isGameOver()) {
-    return { value: evaluatePosition(game) };
+  if (depth === 0 || game.isGameOver() || pruneBranch(game)) {
+    return { value: evaluatePosition(game), moves: [] };
   }
+
+  const max = game.turn() === 'w';
 
   const initBestValue = max
     ? Number.NEGATIVE_INFINITY
     : Number.POSITIVE_INFINITY;
 
-  let best : MinMaxReturn = { value: initBestValue };
+  let best : MinMaxReturn = { value: initBestValue, moves: [] };
 
   const moves = game.moves();
   moves.forEach((move) => {
@@ -36,7 +38,6 @@ function minMax({
       depth: depth - 1,
       game: game,
       evaluatePosition,
-      max: !max,
     });
 
     const isMaxAndBestMax = max && value > best.value;
@@ -44,8 +45,10 @@ function minMax({
 
     if (isMaxAndBestMax || isMinAndBestMin) {
       best.value = value;
-      best.move = move;
+      best.moves = [move];
     }
+
+    if (value === best.value) best.moves.push(move);
     game.undo();
   });
 

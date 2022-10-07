@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from 'react';
 import { Chess, PieceSymbol, Square } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import { ShortMove, Bot } from './types';
@@ -10,11 +10,30 @@ interface Props {
   black?: Bot,
 }
 
-const ChessGame : React.FC<Props> = ({ white, black }) => {
+export type Handle = {
+  reset: () => void,
+  getGame: () => Chess,
+  makeMove: (move: string | ShortMove) => void,
+}
+
+
+const ChessGame = forwardRef<Handle, Props>(({ white, black }, ref) => {
   const game = useMemo(() => new Chess(), []);
   const [fen, setFen] = useState(game.fen());
 
+  useImperativeHandle(ref, () => ({
+    getGame: () => copyGame(game),
+    makeMove,
+    reset: () => {
+      game.reset();
+      setFen(game.fen());
+    }
+  }));
+
   const makeMove = (move?: string | ShortMove) => {
+    if (game.isGameOver()) {
+      return false;
+    }
     if (!move) {
       console.error('No Move Supplied');
       return false;
@@ -35,6 +54,10 @@ const ChessGame : React.FC<Props> = ({ white, black }) => {
   };
 
   const onDrop = (sourceSquare: Square, targetSquare: Square) => {
+    // If its a bots turn do nothing
+    const bot = getBot();
+    if (bot) return false;
+
     const fromPiece = game.get(sourceSquare);
 
     let promotion : PieceSymbol | undefined = undefined;
@@ -79,11 +102,11 @@ const ChessGame : React.FC<Props> = ({ white, black }) => {
     console.log(move);
 
     makeMove(move);
-  }, 200);
+  }, 400, { trailing: true });
 
-  useEffect(makeBotMove, [fen, makeBotMove]);
+  useEffect(makeBotMove, [fen, makeBotMove, white, black]);
 
   return <Chessboard position={fen} onPieceDrop={onDrop} />;
-};
+});
 
 export default ChessGame;
